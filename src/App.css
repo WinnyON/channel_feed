@@ -1082,7 +1082,7 @@ body {
     min-width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    max-height: 50vh;
+    max-height: 45vh;
   }
 
   .video-grid {
@@ -1091,6 +1091,21 @@ body {
 
   .header {
     padding: 12px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .header-actions button,
+  .header-actions a {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
   .feed-section {
@@ -1106,8 +1121,34 @@ body {
 }
 
 @media (max-width: 480px) {
+  .sidebar {
+    max-height: 55vh;
+  }
+
+  .settings-dropdown-menu {
+    min-width: 240px;
+    right: auto;
+    left: 0;
+  }
+
+  .search-result-item {
+    gap: 8px;
+  }
+
+  .channel-item {
+    padding: 8px 10px;
+  }
+
   .video-grid {
     grid-template-columns: 1fr;
+  }
+
+  .channel-group-header {
+    flex-wrap: wrap;
+  }
+
+  .player-modal {
+    border-radius: 0;
   }
 }
 
