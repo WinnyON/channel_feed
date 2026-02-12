@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Use - Channel Curator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #242424;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b6b6b;
+            --accent: #3ea6ff;
+            --border: #333;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .logo svg {
+            color: #ff0000;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .tip {
+            background: rgba(62, 166, 255, 0.1);
+            border: 1px solid rgba(62, 166, 255, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .tip h4 {
+            color: var(--accent);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .tip p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0;
+        }
+
+        code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: var(--accent);
+        }
+
+        ul {
+            color: var(--text-secondary);
+            margin-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 0.8;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .feature-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .feature-item h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .feature-item p {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Channel Curator
+        </a>
+
+        <header>
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+                <h1>Channel Curator</h1>
+            </div>
+            <p class="subtitle">Your personal YouTube channel video curator</p>
+        </header>
+
+        <section>
+            <h2>What is Channel Curator?</h2>
+            <p>
+                Channel Curator is a personal video dashboard that lets you curate content from your favorite YouTube channels in one place. Instead of visiting multiple channels, all their latest videos appear in your personalized feed.
+            </p>
+            <p>
+                Perfect for staying updated with content from creators you follow without the algorithmic recommendations getting in the way.
+            </p>
+        </section>
+
+        <section>
+            <h2>How to Use</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Get a YouTube API Key</h3>
+                    <p>
+                        Click the <strong>Settings</strong> button in the top right, enter your YouTube Data API key, and click Apply.
+                        Get a free key from <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" style="color: var(--accent);">Google Cloud Console</a>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Search and Add Channels</h3>
+                    <p>
+                        Use the search box in the sidebar to find YouTube channels. Click the <strong>+</strong> button to add them to your list.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Configure Content Types</h3>
+                    <p>
+                        Click the settings icon next to each channel to choose what content to fetch: long videos, Shorts, and community posts.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Refresh Your Feed</h3>
+                    <p>
+                        Click the <strong>Refresh</strong> button to fetch the latest videos from all your added channels.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>Watch and Track Progress</h3>
+                    <p>
+                        Click on any video to play it in the embedded player. Use the checkbox to mark videos as watched.
+                    </p>
+                </div>
+            </div>
+
+            <div class="tip">
+                <h4>Tip: Settings</h4>
+                <p>
+                    Use Settings to adjust how many videos to fetch per channel and how far back to look. Your settings are saved automatically.
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h4>Channel Grouping</h4>
+                    <p>Videos are organized by channel so you know where each video comes from.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Watch Tracking</h4>
+                    <p>Mark videos as watched with a single click. Status persists across sessions.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Session Persistence</h4>
+                    <p>Your channels, videos, and progress are saved automatically.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Embedded Player</h4>
+                    <p>Watch videos without leaving the site in the floating player.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Quota & API Usage</h2>
+            <p>
+                This app uses the YouTube Data API v3. Your API key has a daily quota of 10,000 units.
+            </p>
+            <ul>
+                <li>Searching for channels: <strong>100 units</strong></li>
+                <li>Fetching videos: <strong>2-3 units</strong> per channel</li>
+                <li>Community posts: <strong>1 unit</strong> per channel</li>
+            </ul>
+            <p>
+                With optimized fetching, you can refresh your feed hundreds of times per day without hitting the limit.
+            </p>
+        </section>
+    </div>
+</body>
+</html>
