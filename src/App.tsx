@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
-import { Search, Plus, X, Settings, Play, MessageSquare, Clock, Film, Youtube, Minimize2, Maximize2, ChevronDown, Check, Eye, EyeOff } from 'lucide-react'
+import { Search, Plus, X, Settings, Play, MessageSquare, Clock, Film, Youtube, Minimize2, Maximize2, ChevronDown, Check, Home, Library, Download, Share2, Smartphone } from 'lucide-react'
 
 // YouTube API configuration - replace with your own API key
 const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY || ''
@@ -46,6 +46,11 @@ interface FetchSettings {
   timeRangeDays: number
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+}
+
 const TIME_RANGE_OPTIONS = [
   { value: 1, label: 'Last 24 hours' },
   { value: 7, label: 'Last 7 days' },
@@ -87,11 +92,18 @@ function App() {
   })
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
   const [expandedSettings, setExpandedSettings] = useState<string | null>(null)
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('youtubeApiKey') || '')
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('youtubeApiKey') || YOUTUBE_API_KEY)
   const [apiKeyApplied, setApiKeyApplied] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [playingVideo, setPlayingVideo] = useState<Video | null>(null)
   const [isPlayerExpanded, setIsPlayerExpanded] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [showInstallHelp, setShowInstallHelp] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(() =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  )
   const [fetchSettings, setFetchSettings] = useState<FetchSettings>(() => {
     const saved = localStorage.getItem('fetchSettings')
     return saved ? JSON.parse(saved) : { maxVideosPerChannel: 10, timeRangeDays: 30 }
@@ -124,6 +136,25 @@ function App() {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault()
+      setInstallPrompt(event as BeforeInstallPromptEvent)
+    }
+    const handleAppInstalled = () => {
+      setInstallPrompt(null)
+      setIsInstalled(true)
+      setShowInstallHelp(false)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
   }, [])
 
   useEffect(() => {
@@ -175,14 +206,25 @@ function App() {
     setApiKeyApplied(true)
   }
 
+  const handleInstallApp = async () => {
+    if (!installPrompt) {
+      setShowInstallHelp(true)
+      return
+    }
+
+    await installPrompt.prompt()
+    await installPrompt.userChoice
+    setInstallPrompt(null)
+  }
+
   // Open settings and focus API key input when needed
-  const requestApiKey = () => {
+  const requestApiKey = useCallback(() => {
     setShowSettingsDropdown(true)
     // Focus the API key input after a small delay to ensure dropdown is rendered
     setTimeout(() => {
       apiKeyInputRef.current?.focus()
     }, 50)
-  }
+  }, [])
 
   const fetchChannelVideos = useCallback(async (channel: Channel) => {
     if (!apiKey) {
@@ -227,7 +269,7 @@ function App() {
           .filter(Boolean)
 
         // Batch fetch video durations (1 unit for up to 50 videos!)
-        let videoDurations: Record<string, string> = {}
+        const videoDurations: Record<string, string> = {}
         if (videoIds.length > 0) {
           const batchSize = 50
           for (let i = 0; i < videoIds.length; i += batchSize) {
@@ -472,7 +514,11 @@ function App() {
 
   const getVideosByChannel = () => {
     const grouped: { channel: Channel; videos: (Video | CommunityPost)[] }[] = []
-    for (const channel of channels) {
+    const visibleChannels = selectedChannel
+      ? channels.filter(channel => channel.id === selectedChannel)
+      : channels
+
+    for (const channel of visibleChannels) {
       const channelVideos = videos.filter(v => v.channelId === channel.id)
       if (channelVideos.length > 0) {
         grouped.push({ channel, videos: channelVideos })
@@ -497,6 +543,8 @@ function App() {
   }
 
   const groupedVideos = getVideosByChannel()
+  const visibleItemCount = groupedVideos.reduce((total, group) => total + group.videos.length, 0)
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
 
   return (
     <div className="app">
@@ -507,6 +555,12 @@ function App() {
           <h1>Channel Feed</h1>
         </div>
         <div className="header-actions" ref={settingsRef}>
+          {!isInstalled && (
+            <button className="install-btn desktop-install-btn" onClick={handleInstallApp}>
+              <Download size={18} />
+              <span>Install</span>
+            </button>
+          )}
           <a className="howto-btn" href="/readme.html">
             How to use
           </a>
@@ -514,6 +568,8 @@ function App() {
             <button
               className={`settings-dropdown-btn ${showSettingsDropdown ? 'active' : ''}`}
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+              aria-label="Open settings"
+              aria-expanded={showSettingsDropdown}
             >
               <Settings size={18} />
               <span>Settings</span>
@@ -580,9 +636,26 @@ function App() {
         </div>
       </header>
 
+      {isMobileSidebarOpen && (
+        <button
+          className="mobile-sidebar-backdrop"
+          onClick={() => setIsMobileSidebarOpen(false)}
+          aria-label="Close channels"
+        />
+      )}
+
       <main className="main-content">
         {/* Sidebar - Channel Management */}
-        <aside className="sidebar">
+        <aside className={`sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
+          <div className="mobile-sidebar-header">
+            <div>
+              <span className="eyebrow">Your library</span>
+              <h2>Channels</h2>
+            </div>
+            <button onClick={() => setIsMobileSidebarOpen(false)} aria-label="Close channels">
+              <X size={22} />
+            </button>
+          </div>
           <div className="search-section">
             <h3>Add Channels</h3>
             <div className="search-box">
@@ -633,6 +706,20 @@ function App() {
                   <div key={channel.id} className="channel-item-wrapper">
                     <div
                       className={`channel-item ${selectedChannel === channel.id ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedChannel(selectedChannel === channel.id ? null : channel.id)
+                        setIsMobileSidebarOpen(false)
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          setSelectedChannel(selectedChannel === channel.id ? null : channel.id)
+                          setIsMobileSidebarOpen(false)
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={selectedChannel === channel.id}
                     >
                       <img src={channel.thumbnail} alt={channel.name} />
                       <div className="channel-info">
@@ -646,14 +733,20 @@ function App() {
                       <div className="channel-actions">
                         <button
                           className={`action-btn settings-btn ${expandedSettings === channel.id ? 'active' : ''}`}
-                          onClick={() => setExpandedSettings(expandedSettings === channel.id ? null : channel.id)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setExpandedSettings(expandedSettings === channel.id ? null : channel.id)
+                          }}
                           title="Content settings"
                         >
                           <Settings size={16} />
                         </button>
                         <button
                           className="action-btn remove-btn"
-                          onClick={() => removeChannel(channel.id)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            removeChannel(channel.id)
+                          }}
                           title="Remove channel"
                         >
                           <X size={16} />
@@ -704,9 +797,33 @@ function App() {
         {/* Main Feed */}
         <section className="feed-section">
           <div className="feed-header">
-            <h2>Your Feed</h2>
-            <span className="video-count">{videos.length} items</span>
+            <div>
+              <span className="eyebrow">Subscriptions</span>
+              <h2>{selectedChannel ? channels.find(channel => channel.id === selectedChannel)?.name : 'Your Feed'}</h2>
+            </div>
+            <span className="video-count">{visibleItemCount} items</span>
           </div>
+
+          {channels.length > 0 && (
+            <div className="channel-filter-bar" aria-label="Filter feed by channel">
+              <button
+                className={!selectedChannel ? 'active' : ''}
+                onClick={() => setSelectedChannel(null)}
+              >
+                All
+              </button>
+              {channels.map(channel => (
+                <button
+                  key={channel.id}
+                  className={selectedChannel === channel.id ? 'active' : ''}
+                  onClick={() => setSelectedChannel(channel.id)}
+                >
+                  <img src={channel.thumbnail} alt="" />
+                  <span>{channel.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {isLoadingVideos ? (
             <div className="loading">
@@ -772,12 +889,19 @@ function App() {
                                 </div>
                               </div>
                               <div className="video-info">
-                                <span className="type-indicator">
-                                  {getContentTypeIcon(video.type)}
-                                  {video.type === 'shorts' ? 'Short' : 'Video'}
-                                </span>
-                                <h3 className="video-title">{video.title}</h3>
-                                <span className="timestamp">{formatDate(video.publishedAt)}</span>
+                                <img className="video-channel-avatar" src={channel.thumbnail} alt="" />
+                                <div className="video-copy">
+                                  <h3 className="video-title">{video.title}</h3>
+                                  <div className="video-metadata">
+                                    <span>{video.channelName}</span>
+                                    <span aria-hidden="true">•</span>
+                                    <span>{formatDate(video.publishedAt)}</span>
+                                    <span className="type-indicator">
+                                      {getContentTypeIcon(video.type)}
+                                      {video.type === 'shorts' ? 'Short' : 'Video'}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <button
@@ -798,6 +922,80 @@ function App() {
           )}
         </section>
       </main>
+
+      <nav className="mobile-nav" aria-label="Primary navigation">
+        <button
+          className={!isMobileSidebarOpen ? 'active' : ''}
+          onClick={() => setIsMobileSidebarOpen(false)}
+        >
+          <Home size={21} />
+          <span>Feed</span>
+        </button>
+        <button
+          className={isMobileSidebarOpen ? 'active' : ''}
+          onClick={() => setIsMobileSidebarOpen(true)}
+        >
+          <Library size={21} />
+          <span>Channels</span>
+        </button>
+        <button onClick={fetchVideos} disabled={isLoadingVideos}>
+          <Clock size={21} className={isLoadingVideos ? 'spinning' : ''} />
+          <span>{isLoadingVideos ? 'Loading' : 'Refresh'}</span>
+        </button>
+        {!isInstalled && (
+          <button onClick={handleInstallApp}>
+            <Download size={21} />
+            <span>Install</span>
+          </button>
+        )}
+        <button
+          className={showSettingsDropdown ? 'active' : ''}
+          onClick={() => {
+            setIsMobileSidebarOpen(false)
+            setShowSettingsDropdown(true)
+          }}
+        >
+          <Settings size={21} />
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      {showInstallHelp && (
+        <div className="dialog-backdrop" onClick={() => setShowInstallHelp(false)}>
+          <section
+            className="install-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="install-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="dialog-close"
+              onClick={() => setShowInstallHelp(false)}
+              aria-label="Close install instructions"
+            >
+              <X size={22} />
+            </button>
+            <div className="install-dialog-icon">
+              <Smartphone size={28} />
+            </div>
+            <h2 id="install-dialog-title">Install Channel Feed</h2>
+            {isIOS ? (
+              <p>
+                In Safari, tap <Share2 size={16} aria-hidden="true" /> <strong>Share</strong>,
+                then choose <strong>Add to Home Screen</strong>.
+              </p>
+            ) : (
+              <p>
+                Open your browser menu and choose <strong>Install app</strong> or
+                <strong> Add to Home screen</strong>. Installation is available when this
+                site is served over HTTPS.
+              </p>
+            )}
+            <button className="dialog-done" onClick={() => setShowInstallHelp(false)}>Got it</button>
+          </section>
+        </div>
+      )}
 
       {/* Embedded Video Player Modal */}
       {playingVideo && (
